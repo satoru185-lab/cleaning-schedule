@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxODAgMTgwIj4KICA8cmVjdCB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgcng9IjQwIiBmaWxsPSIjYzg0NDBhIi8+CiAgPHBvbHlnb24gcG9pbnRzPSI5MCwyOCAxNDIsNzYgMTMwLDc2IDEzMCwxMzIgNTAsMTMyIDUwLDc2IDM4LDc2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC45NSIvPgogIDxyZWN0IHg9Ijc0IiB5PSI5NiIgd2lkdGg9IjMyIiBoZWlnaHQ9IjM2IiByeD0iMyIgZmlsbD0iI2M4NDQwYSIvPgogIDxsaW5lIHgxPSIxMDgiIHkxPSIxMTgiIHgyPSIxNTAiIHkyPSIxNTgiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgPGVsbGlwc2UgY3g9IjE1NCIgY3k9IjE2MiIgcng9IjE1IiByeT0iNyIgZmlsbD0id2hpdGUiIHRyYW5zZm9ybT0icm90YXRlKC00NSAxNTQgMTYyKSIvPgo8L3N2Zz4=">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Molly's Schedule">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Molly's Airbnb Cleaning Schedule</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,wght@0,300;0,600;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f0e8;
+    --paper: #fdfaf4;
+    --ink: #1a1610;
+    --muted: #7a6f5e;
+    --accent: #c8440a;
+    --accent2: #2a6b4a;
+    --border: #d4c9b0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    padding: 2rem 1rem;
+  }
+  .container { max-width: 680px; margin: 0 auto; }
+  header { margin-bottom: 2.5rem; }
+  header h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 2rem;
+    line-height: 1.1;
+  }
+  header h1 span { font-style: italic; color: var(--accent); }
+  header p { font-size: 0.75rem; color: var(--muted); margin-top: 0.4rem; letter-spacing: 0.05em; }
+
+  .card {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1.5rem;
+    margin-bottom: 1.25rem;
+  }
+  .card-title {
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 1rem;
+  }
+  .ical-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+  .ical-field label {
+    display: block;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin-bottom: 0.3rem;
+    text-transform: uppercase;
+  }
+  .ical-field input {
+    width: 100%;
+    padding: 0.5rem 0.6rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .ical-field input:focus { border-color: var(--accent); }
+  .ical-field input.saved { border-color: var(--accent2); }
+
+  .e-note {
+    grid-column: 1 / -1;
+    background: #eef5f0;
+    border: 1px solid #b8d8c4;
+    border-radius: 3px;
+    padding: 0.6rem 0.8rem;
+    font-size: 0.68rem;
+    color: #2a6b4a;
+    line-height: 1.5;
+  }
+
+  .week-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+  .week-row input[type="date"] {
+    padding: 0.5rem 0.6rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    color: var(--ink);
+    outline: none;
+  }
+  .week-row input[type="date"]:focus { border-color: var(--accent); }
+  .week-label { font-size: 0.75rem; color: var(--muted); }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.55rem 1.1rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { background: #a83708; }
+  .btn-primary:disabled { background: var(--border); cursor: not-allowed; }
+  .btn-secondary { background: var(--ink); color: var(--bg); }
+  .btn-secondary:hover { background: #2e2820; }
+  .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+  .btn-ghost:hover { background: var(--bg); color: var(--ink); }
+
+  .status { font-size: 0.7rem; color: var(--muted); margin-top: 0.75rem; min-height: 1rem; }
+  .status.error { color: var(--accent); }
+  .status.ok { color: var(--accent2); }
+
+  .output-area { display: none; }
+  .output-area.visible { display: block; }
+
+  .message-box {
+    background: var(--ink);
+    color: #e8e0d0;
+    border-radius: 4px;
+    padding: 1.25rem 1.4rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.78rem;
+    line-height: 1.8;
+    white-space: pre-wrap;
+    margin-bottom: 1rem;
+  }
+  .output-actions { display: flex; gap: 0.75rem; align-items: center; }
+  .copy-feedback { font-size: 0.7rem; color: var(--accent2); opacity: 0; transition: opacity 0.3s; }
+  .copy-feedback.show { opacity: 1; }
+
+  .divider { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
+  .help-text { font-size: 0.68rem; color: var(--muted); line-height: 1.6; margin-top: 0.6rem; }
+
+  .note-box {
+    background: #fff8e8;
+    border: 1px solid #e8d8a0;
+    border-radius: 3px;
+    padding: 0.75rem 1rem;
+    font-size: 0.7rem;
+    color: #6b5a20;
+    line-height: 1.6;
+    margin-top: 0.75rem;
+  }
+
+  .spinner {
+    display: inline-block;
+    width: 12px; height: 12px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>Molly's Airbnb<br><span>Cleaning Schedule</span></h1>
+    <p>Auto-builds your weekly message for Molly</p>
+  </header>
+
+  <!-- Step 1: iCal Links (collapsible) -->
+  <div class="card">
+    <div class="card-title" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center;" onclick="toggleSettings()">
+      <span>⚙️ Settings</span>
+      <span id="settings-toggle" style="font-size:0.8rem;color:var(--muted);">Show ▾</span>
+    </div>
+    <div id="settings-body" style="display:none;">
+    <div class="ical-grid">
+      <div class="ical-field">
+        <label>Property A (standalone)</label>
+        <input type="url" id="ical-a" />
+      </div>
+      <div class="ical-field">
+        <label>Property B (standalone)</label>
+        <input type="url" id="ical-b" />
+      </div>
+      <div class="ical-field">
+        <label>Property C (standalone)</label>
+        <input type="url" id="ical-c" />
+      </div>
+      <div class="ical-field">
+        <label>Property F (standalone)</label>
+        <input type="url" id="ical-f" />
+      </div>
+      <div class="ical-field" style="grid-column: 1 / -1;">
+        <label>Listing E — Combined A+B</label>
+        <input type="url" id="ical-e" />
+      </div>
+      <div class="e-note">
+        ℹ When Listing E (combined A+B) has a booking, both A and B will automatically appear in Molly's schedule for that day.
+      </div>
+    </div>
+    <hr class="divider">
+    <div class="ical-field" style="margin-bottom:0.75rem;">
+      <label>Molly's Phone Number</label>
+      <input type="tel" id="molly-phone" placeholder="+1234567890" style="max-width:220px;" />
+    </div>
+    <button class="btn btn-ghost" onclick="saveLinks()">Save Settings</button>
+    <div class="status" id="save-status"></div>
+    <div class="help-text">
+      Links are saved only in your browser. To refresh: Airbnb → Listings → Calendar → Availability settings → Export calendar.
+    </div>
+    <div class="note-box">
+      ⚠ iCal URLs are fetched via a CORS proxy (allorigins.win) due to browser security rules. Your links are never stored on any external server.
+    </div>
+    </div><!-- end settings-body -->
+  </div>
+
+  <!-- Step 2: Generate -->
+  <div class="card">
+    <div class="card-title">Generate</div>
+    <button class="btn btn-primary" id="gen-btn" onclick="generate()">
+      Generate Schedule
+    </button>
+    <div class="status" id="gen-status"></div>
+  </div>
+
+  <!-- Output -->
+  <div class="card output-area" id="output-area">
+    <div class="card-title">Your Message for Molly</div>
+    <div class="message-box" id="message-output"></div>
+    <div class="output-actions">
+      <button class="btn btn-secondary" onclick="copyMessage()">Copy Message</button>
+      <button class="btn btn-primary" id="text-molly-btn" onclick="textMolly()" style="background:#2a6b4a;">📱 Text Molly</button>
+      <span class="copy-feedback" id="copy-feedback">Copied!</span>
+    </div>
+    <div class="status" id="text-status" style="margin-top:0.5rem;"></div>
+  </div>
+</div>
+
+<script>
+// ── Listing map ───────────────────────────────────────────
+// A=18235365, B=18238047, C=26917317, F=46242495
+// E=18241519 (combined A+B — when booked, both A and B appear in schedule)
+const DEFAULT_ICALS = {
+  a: 'https://www.airbnb.com/calendar/ical/18235365.ics?t=f78efaf49f424d03b706bb45fa82a1ff',
+  b: 'https://www.airbnb.com/calendar/ical/18238047.ics?t=fa040a67ff82429dbb059ea3caf1fb62',
+  c: 'https://www.airbnb.com/calendar/ical/26917317.ics?t=e51a46ca491742c689cf28844f7586a3',
+  f: 'https://www.airbnb.com/calendar/ical/46242495.ics?t=fc82344e5e4a4558880d64c9a7b80f7d',
+  e: 'https://www.airbnb.com/calendar/ical/18241519.ics?t=d1151a4fbdc84d55a8cf0ff314ced1bf',
+};
+
+// ── Storage ──────────────────────────────────────────────
+function saveLinks() {
+  const data = {
+    a: document.getElementById('ical-a').value,
+    b: document.getElementById('ical-b').value,
+    c: document.getElementById('ical-c').value,
+    f: document.getElementById('ical-f').value,
+    e: document.getElementById('ical-e').value,
+    phone: document.getElementById('molly-phone').value,
+  };
+  localStorage.setItem('airbnb_ical_v3', JSON.stringify(data));
+  const s = document.getElementById('save-status');
+  s.textContent = '✓ Saved to this browser.';
+  s.className = 'status ok';
+  document.querySelectorAll('.ical-field input').forEach(i => i.classList.add('saved'));
+}
+
+function loadLinks() {
+  // Clear any old cached versions that may have wrong URL assignments
+  localStorage.removeItem('airbnb_ical');
+  localStorage.removeItem('airbnb_ical_v2');
+  const raw = localStorage.getItem('airbnb_ical_v3');
+  const d = raw ? JSON.parse(raw) : {};
+  // Always fall back to DEFAULT_ICALS for any missing/empty values
+  document.getElementById('ical-a').value = (d.a && d.a.trim()) ? d.a : DEFAULT_ICALS.a;
+  document.getElementById('ical-b').value = (d.b && d.b.trim()) ? d.b : DEFAULT_ICALS.b;
+  document.getElementById('ical-c').value = (d.c && d.c.trim()) ? d.c : DEFAULT_ICALS.c;
+  document.getElementById('ical-f').value = (d.f && d.f.trim()) ? d.f : DEFAULT_ICALS.f;
+  document.getElementById('ical-e').value = (d.e && d.e.trim()) ? d.e : DEFAULT_ICALS.e;
+  document.getElementById('molly-phone').value = d.phone || '+18453924814';
+  document.getElementById('save-status').textContent = '✓ All 5 links pre-loaded.';
+  document.getElementById('save-status').className = 'status ok';
+}
+
+// ── Date helpers ─────────────────────────────────────────
+function getNextWednesday() {
+  const d = new Date();
+  const day = d.getDay();
+  const diff = (3 - day + 7) % 7 || 7;
+  d.setDate(d.getDate() + diff);
+  return d;
+}
+
+function toYMD(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const dd = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${dd}`;
+}
+
+function parseDateStr(s) {
+  const [y,m,d] = s.split('-').map(Number);
+  return new Date(y, m-1, d);
+}
+
+function formatShortDate(d) {
+  return `${d.getMonth()+1}/${d.getDate()}`;
+}
+
+function dayName(d) {
+  return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()];
+}
+
+function updateWeekLabel() {
+  const v = document.getElementById('week-start').value;
+  if (!v) return;
+  const start = parseDateStr(v);
+  const end = new Date(start); end.setDate(end.getDate() + 6);
+  document.getElementById('week-range-label').textContent =
+    `${formatShortDate(start)} – ${formatShortDate(end)}`;
+}
+
+// ── iCal fetch & parse ───────────────────────────────────
+async function fetchICal(url) {
+  url = url.replace(/^webcal:\/\//i, 'https://');
+  const proxies = [
+    `https://corsproxy.io/?${encodeURIComponent(url)}`,
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+    `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+    `https://thingproxy.freeboard.io/fetch/${url}`,
+    `https://yacdn.org/proxy/${url}`,
+  ];
+  for (const proxy of proxies) {
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 10000);
+      const res = await fetch(proxy, { signal: controller.signal });
+      clearTimeout(timer);
+      if (!res.ok) continue;
+      const text = await res.text();
+      if (text.includes('BEGIN:VCALENDAR')) return text;
+    } catch(e) { continue; }
+  }
+  throw new Error('All proxies failed');
+}
+
+function parseICal(text) {
+  const events = [];
+  const blocks = text.split('BEGIN:VEVENT');
+  for (let i = 1; i < blocks.length; i++) {
+    const block = blocks[i];
+    const dtstart = block.match(/DTSTART(?:;[^:]+)?:(\d{8})/);
+    const dtend   = block.match(/DTEND(?:;[^:]+)?:(\d{8})/);
+    if (!dtstart || !dtend) continue;
+    const summary = block.match(/SUMMARY:(.+)/);
+    const sumText = summary ? summary[1].trim().toLowerCase() : '';
+    // Skip blocked dates (not real bookings) — Airbnb marks these as "Airbnb (Not available)"
+    if (sumText === 'airbnb (not available)' || sumText === 'not available') continue;
+    events.push({
+      start: parseICalDate(dtstart[1]),
+      end:   parseICalDate(dtend[1]),
+    });
+  }
+  return events;
+}
+
+function parseICalDate(s) {
+  const y = +s.slice(0,4), m = +s.slice(4,6)-1, d = +s.slice(6,8);
+  return new Date(y, m, d);
+}
+
+function sameDay(a, b) {
+  return a.getFullYear()===b.getFullYear() &&
+         a.getMonth()===b.getMonth() &&
+         a.getDate()===b.getDate();
+}
+
+function classifyDay(events, day) {
+  // Check ALL events for this day — back-to-back bookings can have
+  // both a checkout and a checkin on the same day
+  let result = null;
+  for (const ev of events) {
+    if (sameDay(ev.end, day))           result = result === 'checkin' ? 'both' : 'checkout';
+    else if (sameDay(ev.start, day))    result = result === 'checkout' ? 'both' : 'checkin';
+    else if (ev.start < day && ev.end > day && !result) result = 'ongoing';
+  }
+  return result;
+}
+
+// ── Generate ─────────────────────────────────────────────
+async function generate() {
+  const btn = document.getElementById('gen-btn');
+  const statusEl = document.getElementById('gen-status');
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Fetching calendars...';
+  statusEl.textContent = '';
+  statusEl.className = 'status';
+
+  // Always start from today
+  const weekStart = new Date();
+  weekStart.setHours(0,0,0,0);
+  const days = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(weekStart); d.setDate(d.getDate() + i);
+    days.push(d);
+  }
+
+  const urlMap = {
+    A: document.getElementById('ical-a').value.trim(),
+    B: document.getElementById('ical-b').value.trim(),
+    C: document.getElementById('ical-c').value.trim(),
+    F: document.getElementById('ical-f').value.trim(),
+    E: document.getElementById('ical-e').value.trim(), // combined A+B
+  };
+
+  const eventsMap = {};
+  const errors = [];
+
+  // Fetch all calendars in parallel for speed
+  await Promise.all(Object.entries(urlMap).map(async ([key, url]) => {
+    if (!url) { eventsMap[key] = []; return; }
+    try {
+      const text = await fetchICal(url);
+      eventsMap[key] = parseICal(text);
+    } catch(e) {
+      eventsMap[key] = [];
+      errors.push(key);
+    }
+  }));
+
+  const loaded = Object.keys(urlMap).filter(k => !errors.includes(k) && urlMap[k]);
+  if (errors.length) {
+    statusEl.textContent = `⚠ Could not fetch: ${errors.join(', ')}. Loaded: ${loaded.join(', ')}`;
+    statusEl.className = 'status error';
+  }
+
+  const endDay = new Date(weekStart); endDay.setDate(endDay.getDate() + 6);
+  const weekRange = `${formatShortDate(weekStart)} - ${formatShortDate(endDay)}`;
+
+  // ── Detect new bookings vs last saved snapshot ──────────
+  const snapshotKey = 'airbnb_booking_snapshot';
+  const prevRaw = localStorage.getItem(snapshotKey);
+  const prevSnapshot = prevRaw ? JSON.parse(prevRaw) : {};
+
+  // Build current snapshot: for each property, list of booking start dates in range
+  const currentSnapshot = {};
+  for (const p of ['A','B','C','F','E']) {
+    currentSnapshot[p] = (eventsMap[p] || [])
+      .filter(ev => ev.start >= weekStart && ev.start <= endDay)
+      .map(ev => ev.start.toDateString())
+      .sort();
+  }
+
+  // Find new bookings (dates in current but not in previous snapshot)
+  const newBookings = [];
+  for (const p of ['A','B','C','F']) {
+    const prev = prevSnapshot[p] || [];
+    const curr = currentSnapshot[p] || [];
+    // Also check E combined listing for A and B
+    const prevE = prevSnapshot['E'] || [];
+    const currE = currentSnapshot['E'] || [];
+    const allPrev = p === 'A' || p === 'B' ? [...new Set([...prev, ...prevE])] : prev;
+    const allCurr = p === 'A' || p === 'B' ? [...new Set([...curr, ...currE])] : curr;
+    const isNew = allCurr.some(d => !allPrev.includes(d));
+    if (isNew) newBookings.push(p);
+  }
+
+  // Save current snapshot for next time
+  localStorage.setItem(snapshotKey, JSON.stringify(currentSnapshot));
+
+  // Build message
+  let newBookingNote = '';
+  if (newBookings.length && prevRaw) {
+    // Only show note if we had a previous snapshot (not first run)
+    newBookingNote = `🆕 New booking: Unit ${newBookings.join(', ')}\n\n`;
+  }
+
+  let msg = `Hey Molly,\n${newBookingNote}Here is cleaning schedule for the next 7 days. ${weekRange}\n`;
+
+  for (const day of days) {
+    // Start with individual listing status for A, B, C, F
+    const propStatus = { A: null, B: null, C: null, F: null };
+    for (const p of ['A','B','C','F']) {
+      propStatus[p] = classifyDay(eventsMap[p] || [], day);
+    }
+
+    // Listing E (combined A+B):
+    // - Check in → show as E
+    // - Check out → show as A and B (both units need cleaning)
+    // - Ongoing → show as A and B ongoing
+    const eStatus = classifyDay(eventsMap['E'] || [], day);
+    if (eStatus === 'checkin' || eStatus === 'both') {
+      // E checking in: mark E as checkin (handled separately below)
+    }
+    if (eStatus === 'checkout' || eStatus === 'both') {
+      // E checking out: A and B need cleaning
+      if (!propStatus['A']) propStatus['A'] = 'checkout';
+      if (!propStatus['B']) propStatus['B'] = 'checkout';
+    }
+    if (eStatus === 'ongoing') {
+      // E ongoing: just show E, not A and B
+    }
+    // Handle both (checkout + checkin same day for E)
+    if (eStatus === 'both') {
+      if (!propStatus['A'] || propStatus['A'] === 'checkout') propStatus['A'] = 'both';
+      if (!propStatus['B'] || propStatus['B'] === 'checkout') propStatus['B'] = 'both';
+    }
+
+    const checkouts = [], checkins = [], ongoing = [];
+    for (const p of ['A','B','C','F']) {
+      const s = propStatus[p];
+      if (s === 'checkout' || s === 'both') checkouts.push(p);
+      if (s === 'checkin'  || s === 'both') checkins.push(p);
+      if (s === 'ongoing')                  ongoing.push(p);
+    }
+    // E check in → show E in checkins
+    if (eStatus === 'checkin' || eStatus === 'both') checkins.push('E');
+    // E ongoing → show E in ongoing
+    if (eStatus === 'ongoing') ongoing.push('E');
+
+    if (!checkouts.length && !checkins.length && !ongoing.length) continue;
+
+    msg += `\n—${dayName(day)}— ${formatShortDate(day)}\n`;
+    msg += `Check out:${checkouts.length ? checkouts.join(',') : ''}\n`;
+    msg += `On going:${ongoing.length ? ongoing.join(',') : ''}\n`;
+    msg += `Check in:${checkins.length ? checkins.join(',') : ''}\n`;
+  }
+
+  document.getElementById('message-output').textContent = msg;
+  document.getElementById('output-area').classList.add('visible');
+
+  btn.disabled = false;
+  btn.innerHTML = 'Generate Schedule';
+  if (!errors.length) {
+    statusEl.textContent = '✓ Done! Review and copy below.';
+    statusEl.className = 'status ok';
+  }
+
+  document.getElementById('output-area').scrollIntoView({ behavior: 'smooth' });
+}
+
+function copyMessage() {
+  const text = document.getElementById('message-output').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const fb = document.getElementById('copy-feedback');
+    fb.classList.add('show');
+    setTimeout(() => fb.classList.remove('show'), 2000);
+  });
+}
+
+function textMolly() {
+  const text = document.getElementById('message-output').textContent;
+  const phone = document.getElementById('molly-phone').value.trim().replace(/\s+/g,'');
+  const encoded = encodeURIComponent(text);
+  const statusEl = document.getElementById('text-status');
+
+  if (!phone) {
+    statusEl.textContent = '⚠ Add Molly\'s phone number in Step 1 first.';
+    statusEl.className = 'status error';
+    return;
+  }
+
+  // sms: link works on iPhone and Android to open Messages with pre-filled text
+  const smsLink = `sms:${phone}&body=${encoded}`;
+  window.open(smsLink, '_self');
+  statusEl.textContent = '';
+}
+
+// ── Settings toggle ──────────────────────────────────────
+function toggleSettings() {
+  const body = document.getElementById('settings-body');
+  const label = document.getElementById('settings-toggle');
+  const isHidden = body.style.display === 'none';
+  body.style.display = isHidden ? 'block' : 'none';
+  label.textContent = isHidden ? 'Hide ▴' : 'Show ▾';
+}
+
+// ── Init ─────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  loadLinks();
+});
+</script>
+</body>
+</html>
