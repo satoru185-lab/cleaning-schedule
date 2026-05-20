@@ -518,30 +518,25 @@ async function generate() {
     if (eStatus === 'checkin' || eStatus === 'both') {
       // E checking in: mark E as checkin (handled separately below)
     }
-    if (eStatus === 'checkout' || eStatus === 'both') {
-      // E checking out: A and B need cleaning
-      if (!propStatus['A']) propStatus['A'] = 'checkout';
-      if (!propStatus['B']) propStatus['B'] = 'checkout';
-    }
-    if (eStatus === 'ongoing') {
-      // E ongoing: just show E, not A and B
-    }
-    // Handle both (checkout + checkin same day for E)
-    if (eStatus === 'both') {
-      if (!propStatus['A'] || propStatus['A'] === 'checkout') propStatus['A'] = 'both';
-      if (!propStatus['B'] || propStatus['B'] === 'checkout') propStatus['B'] = 'both';
-    }
-
+    // Build checkout/checkin/ongoing lists independently
     const checkouts = [], checkins = [], ongoing = [];
+
+    // Individual A, B, C, F statuses
     for (const p of ['A','B','C','F']) {
       const s = propStatus[p];
       if (s === 'checkout' || s === 'both') checkouts.push(p);
       if (s === 'checkin'  || s === 'both') checkins.push(p);
       if (s === 'ongoing')                  ongoing.push(p);
     }
-    // E check in → show E in checkins
+
+    // E checkout → always add A and B to checkouts (they need cleaning regardless)
+    if (eStatus === 'checkout' || eStatus === 'both') {
+      if (!checkouts.includes('A')) checkouts.push('A');
+      if (!checkouts.includes('B')) checkouts.push('B');
+    }
+    // E checkin → show as E in checkins
     if (eStatus === 'checkin' || eStatus === 'both') checkins.push('E');
-    // E ongoing → show E in ongoing
+    // E ongoing → show as E in ongoing
     if (eStatus === 'ongoing') ongoing.push('E');
 
     if (!checkouts.length && !checkins.length && !ongoing.length) continue;
