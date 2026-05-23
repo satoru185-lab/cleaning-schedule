@@ -458,7 +458,7 @@ async function generate() {
     statusEl.className = 'status error';
   }
 
-  const endDay = new Date(weekStart); endDay.setDate(endDay.getDate() + 9);
+  const endDay = new Date(weekStart); endDay.setDate(endDay.getDate() + 10);
   const weekRange = `${formatShortDate(weekStart)} - ${formatShortDate(endDay)}`;
 
   // ── Detect new bookings vs last saved snapshot ──────────
