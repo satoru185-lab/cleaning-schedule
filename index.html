@@ -424,7 +424,7 @@ async function generate() {
   const weekStart = new Date();
   weekStart.setHours(0,0,0,0);
   const days = [];
-  for (let i = 0; i < 7; i++) {
+  for (let i = 0; i < 10; i++) {
     const d = new Date(weekStart); d.setDate(d.getDate() + i);
     days.push(d);
   }
@@ -458,7 +458,7 @@ async function generate() {
     statusEl.className = 'status error';
   }
 
-  const endDay = new Date(weekStart); endDay.setDate(endDay.getDate() + 6);
+  const endDay = new Date(weekStart); endDay.setDate(endDay.getDate() + 9);
   const weekRange = `${formatShortDate(weekStart)} - ${formatShortDate(endDay)}`;
 
   // ── Detect new bookings vs last saved snapshot ──────────
@@ -501,7 +501,7 @@ async function generate() {
     newBookingNote = `🆕 New booking: Unit ${newBookings.join(', ')}\n\n`;
   }
 
-  let msg = `Hey Molly,\n${newBookingNote}Here is cleaning schedule for the next 7 days. ${weekRange}\n`;
+  let msg = `Hey Molly,\n${newBookingNote}Here is cleaning schedule for the next 10 days. ${weekRange}\n`;
 
   for (const day of days) {
     // Start with individual listing status for A, B, C, F
