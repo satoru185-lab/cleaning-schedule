@@ -542,9 +542,9 @@ async function generate() {
     // Show all days even if no activity
 
     msg += `\n—${dayName(day)}— ${formatShortDate(day)}\n`;
-    if (checkouts.length) msg += `Check out:${checkouts.join(',')}\n`;
-    if (ongoing.length)   msg += `On going:${ongoing.join(',')}\n`;
-    if (checkins.length)  msg += `Check in:${checkins.join(',')}\n`;
+    msg += `Check out:${checkouts.join(',')}\n`;
+    msg += `On going:${ongoing.join(',')}\n`;
+    msg += `Check in:${checkins.join(',')}\n`;
   }
 
   document.getElementById('message-output').textContent = msg;
