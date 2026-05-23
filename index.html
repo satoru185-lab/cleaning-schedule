@@ -539,12 +539,12 @@ async function generate() {
     // E ongoing → show as E in ongoing
     if (eStatus === 'ongoing') ongoing.push('E');
 
-    if (!checkouts.length && !checkins.length && !ongoing.length) continue;
+    // Show all days even if no activity
 
     msg += `\n—${dayName(day)}— ${formatShortDate(day)}\n`;
-    msg += `Check out:${checkouts.length ? checkouts.join(',') : ''}\n`;
-    msg += `On going:${ongoing.length ? ongoing.join(',') : ''}\n`;
-    msg += `Check in:${checkins.length ? checkins.join(',') : ''}\n`;
+    if (checkouts.length) msg += `Check out:${checkouts.join(',')}\n`;
+    if (ongoing.length)   msg += `On going:${ongoing.join(',')}\n`;
+    if (checkins.length)  msg += `Check in:${checkins.join(',')}\n`;
   }
 
   document.getElementById('message-output').textContent = msg;
