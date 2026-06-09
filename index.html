@@ -539,12 +539,31 @@ async function generate() {
     // E ongoing → show as E in ongoing
     if (eStatus === 'ongoing') ongoing.push('E');
 
-    // Show all days even if no activity
+    // TBD: unit was empty the night before (no guest staying over)
+    // regardless of whether there's a checkin today
+    const tbds = [];
+    const prevDay = new Date(day); prevDay.setDate(prevDay.getDate() - 1);
+    for (const p of ['A','B','C','F']) {
+      // Skip if unit has a confirmed checkout today (already cleaning)
+      if (checkouts.includes(p)) continue;
+      // Skip E-driven checkouts (A and B already listed from E)
+      if ((p === 'A' || p === 'B') && (eStatus === 'checkout' || eStatus === 'both')) continue;
+      // Skip if unit was ongoing (guest stayed over — not vacant)
+      if (ongoing.includes(p)) continue;
+      const prevStatus = classifyDay(eventsMap[p] || [], prevDay);
+      const prevEStatus = classifyDay(eventsMap['E'] || [], prevDay);
+      const wasOccupied = prevStatus === 'ongoing' || prevStatus === 'checkin' ||
+                          ((p === 'A' || p === 'B') && (prevEStatus === 'ongoing' || prevEStatus === 'checkin'));
+      if (!wasOccupied) tbds.push(p);
+    }
 
-    msg += `\n—${dayName(day)}— ${formatShortDate(day)}\n`;
-    msg += `Check out:${checkouts.join(',')}\n`;
-    msg += `On going:${ongoing.join(',')}\n`;
-    msg += `Check in:${checkins.join(',')}\n`;
+    const noClean = checkouts.length === 0 && checkins.length === 0 && tbds.length === 0;
+    const tbdStr = tbds.length ? '(TBD:' + tbds.sort().join(',') + ')' : '';
+    const checkoutStr = checkouts.sort().join(',') + (checkouts.length && tbds.length ? '' : '') + tbdStr;
+    msg += `\n—${dayName(day)}— ${formatShortDate(day)}${noClean ? ' (No cleaning)' : ''}\n`;
+    msg += `Check out:${checkoutStr}\n`;
+    msg += `On going:${ongoing.sort().join(',')}\n`;
+    msg += `Check in:${checkins.sort().join(',')}\n`;
   }
 
   document.getElementById('message-output').textContent = msg;
