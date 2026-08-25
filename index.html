@@ -343,28 +343,17 @@ function updateWeekLabel() {
 }
 
 // ── iCal fetch & parse ───────────────────────────────────
-async function fetchICal(url) {
-  url = url.replace(/^webcal:\/\//i, 'https://');
-  // Add cache buster so we always get fresh data from Airbnb
-  const bust = `&_=${Date.now()}`;
-  const proxies = [
-    `https://corsproxy.io/?${encodeURIComponent(url + bust)}`,
-    `https://api.allorigins.win/raw?url=${encodeURIComponent(url + bust)}`,
-    `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url + bust)}`,
-    `https://thingproxy.freeboard.io/fetch/${url + bust}`,
-  ];
-  for (const proxy of proxies) {
-    try {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 10000);
-      const res = await fetch(proxy, { signal: controller.signal, cache: 'no-store' });
-      clearTimeout(timer);
-      if (!res.ok) continue;
-      const text = await res.text();
-      if (text.includes('BEGIN:VCALENDAR')) return text;
-    } catch(e) { continue; }
-  }
-  throw new Error('All proxies failed');
+async function fetchICal(unit) {
+  // Use our Cloudflare Worker to fetch iCal server-side — no CORS issues
+  const url = `https://green-poetry-6240.satoru185.workers.dev/?unit=${unit}&_=${Date.now()}`;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 15000);
+  const res = await fetch(url, { signal: controller.signal, cache: 'no-store' });
+  clearTimeout(timer);
+  if (!res.ok) throw new Error(`Worker returned ${res.status}`);
+  const text = await res.text();
+  if (!text.includes('BEGIN:VCALENDAR')) throw new Error('Invalid iCal data');
+  return text;
 }
 
 function parseICal(text) {
@@ -443,15 +432,14 @@ async function generate() {
   const eventsMap = {};
   const errors = [];
 
-  // Fetch all calendars in parallel for speed
-  await Promise.all(Object.entries(urlMap).map(async ([key, url]) => {
-    if (!url) { eventsMap[key] = []; return; }
+  // Fetch all calendars in parallel via Cloudflare Worker
+  await Promise.all(['A','B','C','F','E'].map(async (unit) => {
     try {
-      const text = await fetchICal(url);
-      eventsMap[key] = parseICal(text);
+      const text = await fetchICal(unit);
+      eventsMap[unit] = parseICal(text);
     } catch(e) {
-      eventsMap[key] = [];
-      errors.push(key);
+      eventsMap[unit] = [];
+      errors.push(unit);
     }
   }));
 
