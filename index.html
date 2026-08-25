@@ -184,6 +184,9 @@
     <h1>Molly's Airbnb<br><span>Cleaning Schedule</span></h1>
     <p>Auto-builds your weekly message for Molly</p>
   </header>
+  <div id="standalone-warning" style="display:none;background:#fff3cd;border:1px solid #e8c84a;border-radius:4px;padding:0.75rem 1rem;margin-bottom:1rem;font-size:0.72rem;color:#7a5a00;line-height:1.6;">
+    ⚠ <strong>Open in Safari for best results.</strong> Tap the three dots (···) or share button and select "Open in Safari", then use from there.
+  </div>
 
   <!-- Step 1: iCal Links (collapsible) -->
   <div class="card">
@@ -540,9 +543,10 @@ async function generate() {
     if (eStatus === 'ongoing') ongoing.push('E');
 
     // TBD: unit was empty the night before (no guest staying over)
-    // regardless of whether there's a checkin today
+    // Only calculate TBD if calendars actually loaded successfully
     const tbds = [];
     const prevDay = new Date(day); prevDay.setDate(prevDay.getDate() - 1);
+    const calendarsLoaded = errors.length < 5; // at least one loaded
     for (const p of ['A','B','C','F']) {
       // Skip if unit has a confirmed checkout today (already cleaning)
       if (checkouts.includes(p)) continue;
@@ -554,7 +558,7 @@ async function generate() {
       const prevEStatus = classifyDay(eventsMap['E'] || [], prevDay);
       const wasOccupied = prevStatus === 'ongoing' || prevStatus === 'checkin' ||
                           ((p === 'A' || p === 'B') && (prevEStatus === 'ongoing' || prevEStatus === 'checkin'));
-      if (!wasOccupied) tbds.push(p);
+      if (!wasOccupied && calendarsLoaded) tbds.push(p);
     }
 
     const noClean = checkouts.length === 0 && checkins.length === 0 && tbds.length === 0;
@@ -618,6 +622,10 @@ function toggleSettings() {
 // ── Init ─────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   loadLinks();
+  // Warn if running as home screen app (standalone mode)
+  if (window.navigator.standalone) {
+    document.getElementById('standalone-warning').style.display = 'block';
+  }
 });
 </script>
 </body>
