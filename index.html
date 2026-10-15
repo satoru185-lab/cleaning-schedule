@@ -184,12 +184,22 @@
     <h1>Molly's Airbnb<br><span>Cleaning Schedule</span></h1>
     <p>Auto-builds your weekly message for Molly</p>
   </header>
-  <div id="standalone-warning" style="display:none;background:#fff3cd;border:1px solid #e8c84a;border-radius:4px;padding:0.75rem 1rem;margin-bottom:1rem;font-size:0.72rem;color:#7a5a00;line-height:1.6;">
-    ⚠ <strong>Open in Safari for best results.</strong> Tap the three dots (···) or share button and select "Open in Safari", then use from there.
+  <div class="status" id="gen-status"></div>
+
+  <!-- Output -->
+  <div class="card output-area" id="output-area">
+    <div class="card-title">Your Message for Molly</div>
+    <div class="message-box" id="message-output"></div>
+    <div class="output-actions">
+      <button class="btn btn-secondary" onclick="copyMessage()">Copy Message</button>
+      <button class="btn btn-primary" id="text-molly-btn" onclick="textMolly()" style="background:#2a6b4a;">📱 Text Molly</button>
+      <span class="copy-feedback" id="copy-feedback">Copied!</span>
+    </div>
+    <div class="status" id="text-status" style="margin-top:0.5rem;"></div>
   </div>
 
-  <!-- Step 1: iCal Links (collapsible) -->
-  <div class="card">
+  <!-- Settings (collapsed, at bottom) -->
+  <div class="card" style="margin-top:2rem;opacity:0.7;">
     <div class="card-title" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center;" onclick="toggleSettings()">
       <span>⚙️ Settings</span>
       <span id="settings-toggle" style="font-size:0.8rem;color:var(--muted);">Show ▾</span>
@@ -230,31 +240,7 @@
     <div class="help-text">
       Links are saved only in your browser. To refresh: Airbnb → Listings → Calendar → Availability settings → Export calendar.
     </div>
-    <div class="note-box">
-      ⚠ iCal URLs are fetched via a CORS proxy (allorigins.win) due to browser security rules. Your links are never stored on any external server.
-    </div>
     </div><!-- end settings-body -->
-  </div>
-
-  <!-- Step 2: Generate -->
-  <div class="card">
-    <div class="card-title">Generate</div>
-    <button class="btn btn-primary" id="gen-btn" onclick="generate()">
-      Generate Schedule
-    </button>
-    <div class="status" id="gen-status"></div>
-  </div>
-
-  <!-- Output -->
-  <div class="card output-area" id="output-area">
-    <div class="card-title">Your Message for Molly</div>
-    <div class="message-box" id="message-output"></div>
-    <div class="output-actions">
-      <button class="btn btn-secondary" onclick="copyMessage()">Copy Message</button>
-      <button class="btn btn-primary" id="text-molly-btn" onclick="textMolly()" style="background:#2a6b4a;">📱 Text Molly</button>
-      <span class="copy-feedback" id="copy-feedback">Copied!</span>
-    </div>
-    <div class="status" id="text-status" style="margin-top:0.5rem;"></div>
   </div>
 </div>
 
@@ -404,11 +390,8 @@ function classifyDay(events, day) {
 
 // ── Generate ─────────────────────────────────────────────
 async function generate() {
-  const btn = document.getElementById('gen-btn');
   const statusEl = document.getElementById('gen-status');
-
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span> Fetching calendars...';
+  statusEl.textContent = '';
   statusEl.textContent = '';
   statusEl.className = 'status';
 
@@ -561,8 +544,6 @@ async function generate() {
   document.getElementById('message-output').textContent = msg;
   document.getElementById('output-area').classList.add('visible');
 
-  btn.disabled = false;
-  btn.innerHTML = 'Generate Schedule';
   if (!errors.length) {
     statusEl.textContent = '✓ Done! Review and copy below.';
     statusEl.className = 'status ok';
@@ -610,10 +591,7 @@ function toggleSettings() {
 // ── Init ─────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   loadLinks();
-  // Warn if running as home screen app (standalone mode)
-  if (window.navigator.standalone) {
-    document.getElementById('standalone-warning').style.display = 'block';
-  }
+  generate();
 });
 </script>
 </body>
