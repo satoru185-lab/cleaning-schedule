@@ -5,9 +5,9 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Molly's Schedule">
+<meta name="apple-mobile-web-app-title" content="Bao Guest House Cleaning Schedule">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Molly's Airbnb Cleaning Schedule</title>
+<title>Bao Guest House Cleaning Schedule</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,wght@0,300;0,600;1,300&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -181,18 +181,18 @@
 <body>
 <div class="container">
   <header>
-    <h1>Molly's Airbnb<br><span>Cleaning Schedule</span></h1>
-    <p>Auto-builds your weekly message for Molly</p>
+    <h1>Bao Guest House<br><span>Cleaning Schedule</span></h1>
+    <p>Auto-builds your weekly cleaning schedule</p>
   </header>
   <div class="status" id="gen-status"></div>
 
   <!-- Output -->
   <div class="card output-area" id="output-area">
-    <div class="card-title">Your Message for Molly</div>
+    <div class="card-title">Your Cleaning Schedule Message</div>
     <div class="message-box" id="message-output"></div>
     <div class="output-actions">
       <button class="btn btn-secondary" onclick="copyMessage()">Copy Message</button>
-      <button class="btn btn-primary" id="text-molly-btn" onclick="textMolly()" style="background:#2a6b4a;">📱 Text Molly</button>
+      <button class="btn btn-primary" id="text-molly-btn" onclick="textMolly()" style="background:#2a6b4a;">📱 Send Text</button>
       <span class="copy-feedback" id="copy-feedback">Copied!</span>
     </div>
     <div class="status" id="text-status" style="margin-top:0.5rem;"></div>
@@ -227,12 +227,12 @@
         <input type="url" id="ical-e" />
       </div>
       <div class="e-note">
-        ℹ When Listing E (combined A+B) has a booking, both A and B will automatically appear in Molly's schedule for that day.
+        ℹ When Listing E (combined A+B) has a booking, both A and B will automatically appear in the schedule for that day.
       </div>
     </div>
     <hr class="divider">
     <div class="ical-field" style="margin-bottom:0.75rem;">
-      <label>Molly's Phone Number</label>
+      <label>Cleaner's Phone Number</label>
       <input type="tel" id="molly-phone" placeholder="+1234567890" style="max-width:220px;" />
     </div>
     <button class="btn btn-ghost" onclick="saveLinks()">Save Settings</button>
@@ -475,7 +475,7 @@ async function generate() {
     newBookingNote = `🆕 New booking: Unit ${newBookings.join(', ')}\n\n`;
   }
 
-  let msg = `Hey Molly,\n${newBookingNote}Here is cleaning schedule for the next 10 days. ${weekRange}\n`;
+  let msg = `${newBookingNote}Here is cleaning schedule for the next 10 days. ${weekRange}\n`;
 
   for (const day of days) {
     // Start with individual listing status for A, B, C, F
@@ -568,7 +568,7 @@ function textMolly() {
   const statusEl = document.getElementById('text-status');
 
   if (!phone) {
-    statusEl.textContent = '⚠ Add Molly\'s phone number in Step 1 first.';
+    statusEl.textContent = '⚠ Add the cleaner\'s phone number in Settings first.';
     statusEl.className = 'status error';
     return;
   }
